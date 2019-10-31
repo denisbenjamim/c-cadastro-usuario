@@ -61,8 +61,7 @@ bool openBD(char *fileNameDB,char *mode){
 
 
 //Escreve no Arquivo
-void writeInDB(char *fileNameDB,char *mode,struct Usuario user){ 
-   
+void writeInDB(char *fileNameDB,char *mode,struct Usuario user){   
       openBD(fileNameDB,mode);
       FILE *db; 
       if(strcmp(fileNameDB,fileNameUsers)==0){
@@ -71,7 +70,7 @@ void writeInDB(char *fileNameDB,char *mode,struct Usuario user){
       if(strcmp(fileNameDB,fileNameUsersTemp)==0){
          db = fileDBTemp;           
       }
-      fprintf(db, "%s\t\t\t\t\t%s\t\t\t%s\n", strlwr(user.login),strlwr(user.password),strlwr(user.email));
+      fprintf(db, "%s\t%s\t%s\n", strlwr(user.login),strlwr(user.password),strlwr(user.email));
       closeDB(fileNameDB);   
 }  
 
