@@ -12,7 +12,7 @@
   char *modeReader = "r";
   char *modeOverride = "w";
   const int  maxCharByLine = 200;
-  
+  void mainCadastroUsuario();
 
 
  void closeDB(char *fileNameDB){
@@ -70,7 +70,7 @@ void writeInDB(char *fileNameDB,char *mode,struct Usuario user){
       if(strcmp(fileNameDB,fileNameUsersTemp)==0){
          db = fileDBTemp;           
       }
-      fprintf(db, "%s\t%s\t%s\n", strlwr(user.login),strlwr(user.password),strlwr(user.email));
+      fprintf(db, "%s\t%s\t%s\t%s\t%s\t%s\n", strlwr(user.login),strlwr(user.password),strlwr(user.email),strlwr(user.nome),strlwr(user.grupo),strlwr(user.ativo));
       closeDB(fileNameDB);   
 }  
 
@@ -96,8 +96,6 @@ bool isLoginExists(char login[50]){
           
     }
     closeDB(fileNameUsers);
-  }else{
-    printf("\nNao foi possivel Abrir/Encontrar o arquivo de usuarios.");
   }
      
     
@@ -126,18 +124,26 @@ void insertNewUser(){
           
         printf("\n\nDigite o email para o usuario!\n");    
         scanf("%s",usuario.email);   
+
+        printf("\n\nDigite o nome para o usuario!\n");    
+        scanf("%s",usuario.nome);  
+
+        printf("\n\nDigite o GRUPO para o usuario!\n");    
+        scanf("%s",usuario.grupo);
+        usuario.ativo[0] ='s';
+        
         writeInDB(fileNameUsers,modeInsert,usuario);
       }
      
-            
+       mainCadastroUsuario();     
 }      
 
-//Insere os valores de um array em outro
+//Insere os valores de um array de 50 posições em outro tbm de 50 posicões
 void setUserValues(char insert[50],char value[50]){    
     int i;
-    for ( i=0; i < 50; i++)
+    for (i=0; i < 50; i++)
     {
-        insert[i]=value[i];
+        insert[i] = value[i];
     }
 }
 
@@ -163,8 +169,10 @@ void deleteSelectedUser(){
             
             setUserValues(usuario.login,word);        
             setUserValues(usuario.password,strtok(NULL,"\t"));
-            setUserValues(usuario.email,strtok(NULL,"\n"));     
-                
+            setUserValues(usuario.email,strtok(NULL,"\t"));     
+            setUserValues(usuario.nome,strtok(NULL,"\t"));
+            setUserValues(usuario.grupo,strtok(NULL,"\t"));
+            setUserValues(usuario.ativo,strtok(NULL,"\n"));    
             writeInDB(fileNameUsersTemp,modeInsert,usuario);           
           }else{
             isExist = true;
@@ -181,7 +189,8 @@ void deleteSelectedUser(){
      }
       
   }
-   system("pause");
+  system("pause");
+  mainCadastroUsuario();
 }
 
 void findAllUsuarios(){
@@ -208,32 +217,106 @@ void findAllUsuarios(){
           printf("PASSWORD: \t%s\n", word);
 
           //Insere o terceiro texto  da linha atual separando por tabulação (\t) na variavel palavra.(POR ISSO PRIMEIRO ARGUMENTO E NULL)
+          word =  strtok(NULL,"\t");
+          printf("EMAIL: \t\t%s\n", word);
+
+          word =  strtok(NULL,"\t");
+          printf("NOME: \t\t%s\n", word);
+          
+          word =  strtok(NULL,"\t");
+          printf("GRUPO: \t\t%s\n", word);
+          
           word =  strtok(NULL,"\n");
-          printf("EMAIL: %s\n\n", word);
+          if(*word=='s')
+            printf("ATIVO: \t\tSIM \n\n\n");
+          else
+            printf("ATIVO: \t\tNAO\n\n\n");
     }
     closeDB(fileNameUsers);
   }else{
     printf("\nNao foi possivel Abrir/Encontrar o arquivo de usuarios.");
   }
   system("pause");
+   mainCadastroUsuario();  
 }
 
-
-int mainCadastroUsuario()
+ void enableAndDisableUser(bool status){
+  if(openBD(fileNameUsers,modeReader)){     
+      system("cls");
+      system("color 10");      
+      char selectedUser[50];
+      char *word; 
+      char line[200]; 
+      bool isExist = false;
+      printf("Digite o nome do usuario que deseja modificar...\n");
+      scanf("%s",selectedUser);   
+      while(fgets(line, maxCharByLine, fileDB) != NULL){
+          
+          word = strtok(line,"\t");
+         
+          
+          if(strcmp(word,selectedUser)!=0){  
+           
+            struct Usuario usuario;
+            
+            setUserValues(usuario.login,word);        
+            setUserValues(usuario.password,strtok(NULL,"\t"));
+            setUserValues(usuario.email,strtok(NULL,"\t"));     
+            setUserValues(usuario.nome,strtok(NULL,"\t"));
+            setUserValues(usuario.grupo,strtok(NULL,"\t"));
+            setUserValues(usuario.ativo,strtok(NULL,"\n"));    
+            writeInDB(fileNameUsersTemp,modeInsert,usuario);           
+          }else{
+            struct Usuario usuario;
+            
+            setUserValues(usuario.login,word);        
+            setUserValues(usuario.password,strtok(NULL,"\t"));
+            setUserValues(usuario.email,strtok(NULL,"\t"));     
+            setUserValues(usuario.nome,strtok(NULL,"\t"));
+            setUserValues(usuario.grupo,strtok(NULL,"\t"));
+            if(status==true){
+                usuario.ativo[0]='s';    
+            }else{
+                usuario.ativo[0]='n';    
+            }
+            writeInDB(fileNameUsersTemp,modeInsert,usuario);  
+            
+            isExist = true;
+          }
+      }    
+      
+     updateBD();
+     if(isExist){
+       printf("\n%s alterado com sucesso!\n",selectedUser);
+     }
+      
+  }
+  system("pause");
+   mainCadastroUsuario();  
+ }
+void enableUserSelected(){
+  enableAndDisableUser(true);
+}
+void disableUserSelected(){
+   enableAndDisableUser(false);
+}
+void mainCadastroUsuario()
 {   
   
-  do{   
+    
     system("cls"); 
     system("color 2");
     printf("\n1. Inserir novo Usuario.\n");
     printf("2. Listar Usuarios.\n");
-    printf("3. Excluir Usuario.\n");
+    printf("3. Habilitar Usuarios.\n");
+    printf("4. Desabilitar Usuarios.\n");
+    printf("5. Excluir Usuario.\n");
     printf("0. Sair do Sistema.\n\n");
     int opcao;
     scanf("%i",&opcao); 
     switch(opcao){      
             case 0:{
-                return(0);
+               exit(EXIT_SUCCESS);
             }break;  
             case 1:{         
                 insertNewUser();
@@ -241,16 +324,19 @@ int mainCadastroUsuario()
             case 2:{        
                 findAllUsuarios();  
             }break;
-            case 3:{
+             case 3:{        
+               enableUserSelected();
+            }break;
+             case 4:{        
+                disableUserSelected();
+            }break;
+            case 5:{
                 deleteSelectedUser();
+                 printf("Saiu do laço");
             }break;
             default:{
                 system("cls");
                 printf("\n\nOpção Invalida!!!\n\n");
             }break;
     }
-  
-    }while(true);
-  
-  
 }

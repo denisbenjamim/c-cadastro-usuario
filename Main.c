@@ -1,5 +1,6 @@
 #include "CadastroUsuarios.c"
 
 int main(){   
-    return mainCadastroUsuario();
-}
+    mainCadastroUsuario();
+    return 0; 
+} 

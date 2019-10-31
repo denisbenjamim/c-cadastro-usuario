@@ -1,4 +1,3 @@
-#include <stdbool.h>
 struct Usuario
 {
             char nome[50];
@@ -6,5 +5,5 @@ struct Usuario
             char password[50];
             char email[50];
             char grupo[50];
-            bool ativo;
+            char ativo[1];
 };
